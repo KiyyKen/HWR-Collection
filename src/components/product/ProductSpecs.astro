@@ -1,0 +1,45 @@
+---
+import { site } from '../../config/site';
+import { getCategory } from '../../data/categories';
+import { formatSizes } from '../../lib/format';
+import type { ProductData } from '../../lib/products';
+
+/**
+ * Tabel spesifikasi produk.
+ *
+ * Bahasa visualnya sama dengan tabel ketentuan grosir di beranda: baris
+ * berpasangan dipisah garis rambut, bukan kartu. Baris yang datanya belum
+ * ada ditandai jelas, tidak ditebak (brief §21).
+ */
+interface Props {
+  data: ProductData;
+}
+
+const { data } = Astro.props;
+
+const rows: { label: string; value: string | null }[] = [
+  { label: 'Kode produk', value: data.code },
+  { label: 'Kategori', value: getCategory(data.category).title },
+  { label: 'Ukuran tersedia', value: formatSizes(data.sizes) },
+  { label: 'Pilihan warna', value: data.colors.length > 0 ? data.colors.join(', ') : null },
+  { label: 'Bahan', value: data.material },
+  {
+    label: 'Minimum pemesanan',
+    value: `${site.wholesale.minOrderDozen} lusin (${site.wholesale.piecesPerDozen} pcs)`,
+  },
+  { label: 'Satuan harga', value: 'Per lusin' },
+];
+---
+
+<dl>
+  {
+    rows.map((row) => (
+      <div class="grid grid-cols-1 gap-1 border-b border-garis py-3 first:border-t sm:grid-cols-[minmax(0,11rem)_1fr] sm:gap-6">
+        <dt class="t-meta text-redup">{row.label}</dt>
+        <dd class="t-produk">
+          {row.value ?? <span class="text-redup italic">Menunggu data dari pemilik</span>}
+        </dd>
+      </div>
+    ))
+  }
+</dl>

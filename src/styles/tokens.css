@@ -1,0 +1,73 @@
+/**
+ * Token desain HWR Collection.
+ *
+ * INI SATU-SATUNYA TEMPAT WARNA DIDEFINISIKAN.
+ * Saat logo dan warna brand asli datang, ubah file ini saja — tidak ada
+ * komponen yang perlu disentuh. Jangan pernah menulis hex di komponen.
+ *
+ * Nilai dan rasio kontrasnya didokumentasikan di docs/DESIGN-SYSTEM.md §2.
+ */
+
+@theme {
+  /* ── Warna ─────────────────────────────────────────────────────────
+     Skala default Tailwind sengaja dimatikan supaya tidak ada yang bisa
+     memakai gray-500 / blue-600 dan membuat halaman hanyut ke tampilan
+     template generik. Hanya token HWR yang tersedia. */
+  --color-*: initial;
+
+  --color-kertas: #ffffff; /* ground utama, area produk */
+  --color-katun: #f2efe8; /* band informasi tenang */
+  --color-tinta: #17233b; /* teks utama + ground band gelap  15.7:1 */
+  --color-denim: #2e4a87; /* link, state aktif                8.6:1 */
+  --color-jahit: #c08a22; /* aksen tunggal: warna benang jeans */
+  --color-garis: #dfdcd5; /* garis rambut pemisah (dekoratif) */
+
+  --color-redup: #5c6577; /* metadata di atas terang          5.8:1 */
+  --color-kabut: #8fa0c4; /* metadata di atas tinta           6.0:1 */
+  --color-batas: #7a7568; /* border input/select              4.6:1 */
+
+  --color-wa: #25d366; /* HANYA untuk isian glyph WhatsApp */
+  --color-latar-foto: #efede7; /* latar foto produk, disamakan dgn aset */
+
+  /* ── Tipografi ────────────────────────────────────────────────────
+     Satu superfamily. Sumbu wdth 62–125 memberi display melebar dan
+     metadata memadat dari file yang sama. */
+  --font-*: initial;
+  --font-sans: 'Archivo Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --text-*: initial;
+  --text-xs: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.25rem;
+  --text-4xl: 3rem;
+  --text-5xl: 4.25rem;
+
+  /* ── Bentuk ───────────────────────────────────────────────────────
+     Radius 0 di mana-mana kecuali kontrol. Tidak ada nilai lain yang
+     tersedia, jadi tidak mungkin hanyut ke tampilan kartu rounded. */
+  --radius-*: initial;
+  --radius-kontrol: 2px;
+
+  --shadow-*: initial;
+  --shadow-drawer: 0 12px 32px rgb(23 35 59 / 0.18);
+
+  /* ── Spacing ──────────────────────────────────────────────────────
+     Basis 4px: p-4 = 16px, gap-6 = 24px, py-24 = 96px. */
+  --spacing: 4px;
+
+  /* ── Breakpoint ───────────────────────────────────────────────────*/
+  --breakpoint-*: initial;
+  --breakpoint-sm: 480px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1320px;
+
+  /* ── Motion ───────────────────────────────────────────────────────*/
+  --ease-keluar: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --durasi-state: 140ms;
+  --durasi-drawer: 220ms;
+}

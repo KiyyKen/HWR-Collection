@@ -1,0 +1,62 @@
+---
+import { categories, type CategoryId } from '../../data/categories';
+
+/**
+ * Filter kategori sebagai LINK ke halaman statis, bukan tombol JavaScript.
+ *
+ * Konsekuensinya: kategori bisa dibagikan, di-bookmark, di-index mesin
+ * pencari, tombol back/forward browser bekerja sendiri, dan filter tetap
+ * berfungsi penuh tanpa JavaScript sama sekali.
+ *
+ * State aktif ditandai garis bawah warna Jahit, bukan pill berisi
+ * (brief §4, docs/DESIGN-SYSTEM.md §9).
+ */
+interface Props {
+  active: CategoryId | null;
+  counts: Map<CategoryId, number>;
+  total: number;
+}
+
+const { active, counts, total } = Astro.props;
+
+const items = [
+  { href: '/katalog', label: 'Semua', id: null as CategoryId | null, count: total },
+  ...categories.map((c) => ({
+    href: `/katalog/${c.id}`,
+    label: c.label,
+    id: c.id as CategoryId | null,
+    count: counts.get(c.id) ?? 0,
+  })),
+];
+---
+
+<div class="sticky top-0 z-10 border-b border-garis bg-kertas">
+  <nav aria-label="Filter kategori" class="wrap">
+    <ul
+      class="-mx-5 flex snap-x scroll-pl-5 gap-1 overflow-x-auto px-5 md:mx-0 md:scroll-pl-0 md:flex-wrap md:gap-x-6 md:overflow-visible md:px-0"
+    >
+      {
+        items.map((item) => {
+          const isActive = item.id === active;
+          return (
+            <li class="shrink-0 snap-start">
+              <a
+                href={item.href}
+                aria-current={isActive ? 'page' : undefined}
+                class:list={[
+                  't-meta inline-flex min-h-12 items-center gap-1.5 border-b-2 px-3 whitespace-nowrap md:px-0',
+                  isActive
+                    ? 'border-jahit text-tinta'
+                    : 'border-transparent text-redup hover:border-garis hover:text-tinta',
+                ]}
+              >
+                {item.label}
+                <span class="text-redup">{item.count}</span>
+              </a>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </nav>
+</div>

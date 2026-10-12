@@ -1,0 +1,66 @@
+---
+import ProductCell from './ProductCell.astro';
+import { getCategory } from '../data/categories';
+import type { Product } from '../lib/products';
+
+/**
+ * Grid line sheet.
+ *
+ * Produk dipisah garis rambut, bukan jarak antar kartu — struktur dibentuk
+ * garis dan alignment, bukan kotak dan bayangan (docs/DESIGN-SYSTEM.md §6).
+ * Border kiri/atas di wadah, kanan/bawah di tiap sel, jadi baris terakhir
+ * yang tidak penuh tidak meninggalkan garis menggantung.
+ *
+ * Tiap <li> membawa atribut data yang dipakai filter katalog. Atribut ini
+ * dirender di server, jadi pencarian dan pengurutan bekerja di atas markup
+ * yang sudah ada — tanpa JavaScript, daftarnya tetap utuh dan terbaca.
+ */
+interface Props {
+  products: Product[];
+  /** Berapa foto pertama yang dimuat lebih awal. */
+  priorityCount?: number;
+  columns?: 2 | 3 | 4;
+  /** Diteruskan ke tiap sel supaya urutan heading halaman tetap utuh. */
+  headingLevel?: 2 | 3;
+  id?: string;
+  class?: string;
+}
+
+const {
+  products,
+  priorityCount = 0,
+  columns = 4,
+  headingLevel = 3,
+  id,
+  class: className,
+} = Astro.props;
+
+const cols = {
+  2: 'grid-cols-2',
+  3: 'grid-cols-2 md:grid-cols-3',
+  4: 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
+} as const;
+
+/** Teks yang dicocokkan saat pengunjung mengetik di kolom cari. */
+function haystack(product: Product): string {
+  const d = product.data;
+  return [d.name, d.code, getCategory(d.category).title, ...d.colors].join(' ').toLowerCase();
+}
+---
+
+<ul id={id} class:list={['grid border-t border-l border-garis', cols[columns], className]}>
+  {
+    products.map((product, i) => (
+      <li
+        class="border-r border-b border-garis"
+        data-produk
+        data-posisi={i}
+        data-harga={product.data.pricePerDozen}
+        data-nama={product.data.name.toLowerCase()}
+        data-teks={haystack(product)}
+      >
+        <ProductCell product={product} priority={i < priorityCount} headingLevel={headingLevel} />
+      </li>
+    ))
+  }
+</ul>

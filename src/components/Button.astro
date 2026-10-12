@@ -1,0 +1,68 @@
+---
+/**
+ * Satu gaya tombol untuk seluruh situs.
+ *
+ * Satu aksi primer per tampilan:
+ *   terang → isian tinta, teks putih
+ *   gelap  → isian jahit, teks tinta   (5.2:1)
+ *
+ * Tinggi minimum 44px memenuhi area sentuh minimum.
+ */
+interface Props {
+  variant?: 'primer' | 'primer-gelap' | 'sekunder' | 'sekunder-gelap';
+  href?: string;
+  type?: 'button' | 'submit';
+  /** Melebar penuh di mobile, menyusut ke lebar isi mulai breakpoint sm. */
+  block?: boolean;
+  disabled?: boolean;
+  rel?: string;
+  target?: string;
+  class?: string;
+  'aria-describedby'?: string;
+}
+
+const {
+  variant = 'primer',
+  href,
+  type = 'button',
+  block = false,
+  disabled = false,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const base =
+  't-tombol inline-flex min-h-11 items-center justify-center gap-2 rounded-kontrol px-6 py-3 ' +
+  'transition-colors duration-(--durasi-state) disabled:cursor-not-allowed';
+
+/**
+ * State disabled diberi gaya sendiri per varian, bukan sekadar diturunkan
+ * opacity-nya: isian solid yang diredupkan jadi terbaca kotor, terutama
+ * tombol emas di atas ground indigo.
+ */
+const variants = {
+  primer:
+    'bg-tinta text-kertas hover:bg-denim disabled:border disabled:border-garis disabled:bg-katun disabled:text-redup',
+  'primer-gelap':
+    'bg-jahit text-tinta hover:bg-[color-mix(in_srgb,var(--color-jahit)_88%,white)] disabled:border disabled:border-kabut/45 disabled:bg-transparent disabled:text-kabut',
+  sekunder:
+    'border border-batas text-tinta hover:border-tinta hover:bg-katun disabled:border-garis disabled:text-redup',
+  'sekunder-gelap':
+    'border border-kabut text-kertas hover:border-kertas hover:bg-kertas/10 disabled:border-kabut/45 disabled:text-kabut',
+} as const;
+
+const classes = [base, variants[variant], block ? 'w-full sm:w-auto' : '', className];
+const Tag = href && !disabled ? 'a' : 'button';
+---
+
+{
+  Tag === 'a' ? (
+    <a href={href} class:list={classes} {...rest}>
+      <slot />
+    </a>
+  ) : (
+    <button type={type} disabled={disabled} class:list={classes} {...rest}>
+      <slot />
+    </button>
+  )
+}

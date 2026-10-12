@@ -1,0 +1,33 @@
+---
+import Base from '../../layouts/Base.astro';
+import CatalogView from '../../components/catalog/CatalogView.astro';
+import { abs } from '../../lib/seo';
+import { getProducts, countByCategory } from '../../lib/products';
+
+const products = await getProducts();
+const counts = await countByCategory();
+
+const breadcrumb = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Beranda', item: abs() },
+    { '@type': 'ListItem', position: 2, name: 'Katalog', item: abs('katalog') },
+  ],
+};
+---
+
+<Base
+  title="Katalog"
+  description="Katalog grosir HWR Collection: jeans anak, celana training, cargo, kolor, dan Hawai. Harga per lusin, minimum pemesanan 1 lusin, kirim ke seluruh Indonesia."
+  schema={breadcrumb}
+>
+  <CatalogView
+    heading="Katalog"
+    intro="Seluruh produk HWR Collection, dari jeans anak sampai celana Hawai."
+    products={products}
+    activeCategory={null}
+    counts={counts}
+    total={products.length}
+  />
+</Base>

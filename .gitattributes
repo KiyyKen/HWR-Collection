@@ -1,0 +1,12 @@
+# Normalkan akhir baris: LF di repositori, bawaan OS di working copy.
+# Tanpa ini, clone di Windows dan di Linux menghasilkan diff palsu satu file penuh.
+* text=auto eol=lf
+
+# Biner — jangan pernah diotak-atik
+*.png  binary
+*.webp binary
+*.avif binary
+*.jpg  binary
+*.jpeg binary
+*.ico  binary
+*.woff2 binary

@@ -1,0 +1,31 @@
+---
+import Base from '../layouts/Base.astro';
+import FactStrip from '../components/home/FactStrip.astro';
+import Hero from '../components/home/Hero.astro';
+import CategoryNav from '../components/home/CategoryNav.astro';
+import FeaturedProducts from '../components/home/FeaturedProducts.astro';
+import WholesaleBand from '../components/home/WholesaleBand.astro';
+import HowToOrder from '../components/home/HowToOrder.astro';
+import StoreLocation from '../components/home/StoreLocation.astro';
+import WhatsAppBand from '../components/home/WhatsAppBand.astro';
+
+import { site } from '../config/site';
+import { getFeaturedProducts, getProducts } from '../lib/products';
+
+const featured = await getFeaturedProducts(8);
+const all = await getProducts();
+
+// Foto hero memakai produk unggulan pertama — jeans anak, produk andalan.
+const cover = featured[0] ?? all[0];
+---
+
+<Base title={site.name} description={site.description}>
+  <FactStrip />
+  <Hero cover={cover} />
+  <CategoryNav />
+  <FeaturedProducts products={featured} />
+  <WholesaleBand />
+  <HowToOrder />
+  <StoreLocation />
+  <WhatsAppBand />
+</Base>

@@ -1,0 +1,252 @@
+---
+import type { GetStaticPaths } from 'astro';
+
+import Base from '../../layouts/Base.astro';
+import ProductImage from '../../components/ProductImage.astro';
+import ProductGrid from '../../components/ProductGrid.astro';
+import ProductSpecs from '../../components/product/ProductSpecs.astro';
+import IconWhatsApp from '../../components/IconWhatsApp.astro';
+import AddToOrder from '../../components/order/AddToOrder.tsx';
+
+import { site } from '../../config/site';
+import { getCategory } from '../../data/categories';
+import { formatPrice } from '../../lib/format';
+import { getProducts, getRelatedProducts, productAlt } from '../../lib/products';
+import { abs, ringkasMeta } from '../../lib/seo';
+import { singleProductMessage, whatsappLink } from '../../lib/whatsapp';
+import { kalimatIsiLusin } from '../../lib/wholesale';
+
+export const getStaticPaths = (async () => {
+  const products = await getProducts();
+  return products.map((product) => ({
+    params: { id: product.id },
+    props: { product },
+  }));
+}) satisfies GetStaticPaths;
+
+const { product } = Astro.props;
+const d = product.data;
+const category = getCategory(d.category);
+const related = await getRelatedProducts(product, 4);
+
+/* Aturan isi lusin ditaruh tepat di atas kontrol jumlah, bukan di tabel
+   spesifikasi di bawahnya: "satu lusin satu ukuran" mengubah cara orang
+   mengisi angka di stepper, jadi harus terbaca sebelum angkanya diisi. */
+const aturanLusin = kalimatIsiLusin();
+
+// Tautan cadangan untuk pengunjung tanpa JavaScript: satu produk, satu lusin.
+const fallbackWa = whatsappLink(
+  singleProductMessage({
+    code: d.code,
+    name: d.name,
+    qty: site.wholesale.minOrderDozen,
+    pricePerDozen: d.pricePerDozen,
+    priceType: d.priceType,
+  }),
+);
+
+const breadcrumb = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Beranda', item: abs() },
+    { '@type': 'ListItem', position: 2, name: 'Katalog', item: abs('katalog') },
+    {
+      '@type': 'ListItem',
+      position: 3,
+      name: category.title,
+      item: abs('katalog', category.id),
+    },
+    { '@type': 'ListItem', position: 4, name: d.name, item: abs('produk', product.id) },
+  ],
+};
+
+/**
+ * Structured data Product hanya dipancarkan setelah data produknya asli.
+ *
+ * Selama `dummy: true`, nama, harga, dan bahannya masih contoh. Menyiarkan
+ * itu sebagai data terstruktur berarti mengundang mesin pencari menampilkan
+ * harga karangan (brief §21). Skema aktif sendiri begitu `dummy` jadi false.
+ *
+ * `availability` dan `aggregateRating` sengaja tidak pernah diisi: stok dan
+ * ulasan tidak ada datanya, dan mengarangnya bukan pilihan.
+ */
+const productSchema = d.dummy
+  ? null
+  : {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: d.name,
+      sku: d.code,
+      category: category.title,
+      description: d.description,
+      ...(d.material ? { material: d.material } : {}),
+      brand: { '@type': 'Brand', name: site.name },
+      offers: {
+        '@type': 'Offer',
+        price: d.pricePerDozen,
+        priceCurrency: 'IDR',
+        eligibleQuantity: {
+          '@type': 'QuantitativeValue',
+          value: site.wholesale.minOrderDozen,
+          unitText: 'lusin',
+        },
+        url: abs('produk', product.id),
+      },
+    };
+
+const schema = productSchema ? [breadcrumb, productSchema] : breadcrumb;
+
+/*
+  Harga dan minimum pemesanan selalu ikut di meta description — itu yang
+  dicari pembeli grosir saat memindai hasil penelusuran. Kalau kepanjangan,
+  yang dipangkas kalimat deskripsinya, per kalimat utuh.
+*/
+const metaDescription = ringkasMeta(
+  d.description,
+  `${formatPrice(d.pricePerDozen, d.priceType)}, minimum pemesanan ${site.wholesale.minOrderDozen} lusin. Pesan lewat WhatsApp.`,
+);
+---
+
+<Base title={`${d.name} ${d.code}`} description={metaDescription} schema={schema}>
+  <div class="wrap pt-6 pb-12 md:pt-8 md:pb-20 lg:pb-24">
+    {/* Tautan remah roti dibuat setinggi 44px agar cukup sebagai target
+        sentuh; barisnya sendiri diberi margin negatif supaya tidak terlihat
+        tiba-tiba menggemuk. */}
+    <nav aria-label="Remah roti" class="-my-2">
+      <ol class="t-meta flex flex-wrap items-center gap-x-2 text-redup">
+        <li>
+          <a href="/katalog" class="inline-flex min-h-11 items-center underline-offset-4 hover:text-tinta hover:underline">
+            Katalog
+          </a>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li>
+          <a
+            href={`/katalog/${category.id}`}
+            class="inline-flex min-h-11 items-center underline-offset-4 hover:text-tinta hover:underline"
+          >
+            {category.title}
+          </a>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li aria-current="page" class="text-tinta">{d.code}</li>
+      </ol>
+    </nav>
+
+    {/*
+      Penempatan eksplisit, bukan dua kolom polos: di layar besar kolom kanan
+      memuat identitas, harga, kontrol pesanan, DAN spesifikasi, sehingga
+      tingginya mengimbangi foto 4:5 yang tinggi. Deskripsi turun ke bawah
+      foto. Urutan DOM tetap foto → identitas → deskripsi, jadi di mobile
+      nama produk tidak pernah muncul setelah paragraf deskripsi.
+    */}
+    <div class="mt-5 grid gap-8 lg:grid-cols-12 lg:gap-x-12 lg:gap-y-10">
+      <div class="lg:col-span-7 lg:col-start-1 lg:row-start-1">
+        <div class="aspect-4/5 w-full overflow-hidden bg-latar-foto">
+          <ProductImage
+            id={product.id}
+            image={d.image}
+            alt={productAlt(d)}
+            sizes="(min-width: 1024px) 700px, 100vw"
+            widths={[480, 640, 960, 1280]}
+            priority
+          />
+        </div>
+        {/* Keterangan ini hanya benar selama fotonya memang gambar buatan
+            generator — yaitu produk yang masih punya `shape`. Foto yang
+            diunggah admin lewat Sanity adalah foto sungguhan; menandainya
+            "contoh" justru jadi klaim yang salah. */}
+        {
+          d.shape && (
+            <p class="t-meta mt-2 text-redup">Foto contoh. Foto produk asli menyusul.</p>
+          )
+        }
+      </div>
+
+      <div class="lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1">
+        <p class="t-meta text-redup">{category.title}</p>
+        <h1 class="t-section mt-1">{d.name}</h1>
+        <p class="t-meta mt-2 text-redup">{d.code}</p>
+
+        <p class="t-harga mt-5 text-xl">{formatPrice(d.pricePerDozen, d.priceType)}</p>
+        <p class="t-meta mt-1 text-redup">
+          Minimum pemesanan {site.wholesale.minOrderDozen} lusin ({site.wholesale.piecesPerDozen} pcs).
+        </p>
+        {aturanLusin && <p class="t-meta mt-1 text-redup">{aturanLusin}</p>}
+
+        {/*
+          Tinggi dicadangkan supaya halaman tidak bergeser saat island
+          pemesanan selesai hidrasi. Tanpa JavaScript, ruang ini diisi
+          tautan WhatsApp langsung dari <noscript> di bawah.
+        */}
+        <div class="mt-6 min-h-48 border-t border-garis pt-6">
+          <AddToOrder
+            client:load
+            id={product.id}
+            code={d.code}
+            name={d.name}
+            pricePerDozen={d.pricePerDozen}
+            priceType={d.priceType}
+          />
+
+          <noscript>
+            <p class="t-meta text-redup">
+              Daftar pesanan butuh JavaScript. Anda tetap bisa memesan produk ini
+              langsung lewat WhatsApp.
+            </p>
+            {
+              fallbackWa ? (
+                <a
+                  href={fallbackWa}
+                  target="_blank"
+                  rel="noopener"
+                  class="t-tombol mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-kontrol bg-tinta px-6 text-kertas"
+                >
+                  <IconWhatsApp />
+                  Pesan {site.wholesale.minOrderDozen} lusin via WhatsApp
+                </a>
+              ) : (
+                <p class="t-meta mt-3 text-redup">
+                  Nomor WhatsApp toko belum diisi di konfigurasi situs.
+                </p>
+              )
+            }
+          </noscript>
+        </div>
+
+        <h2 class="t-sub mt-10">Spesifikasi</h2>
+        <div class="mt-3">
+          <ProductSpecs data={d} />
+        </div>
+      </div>
+
+      <div class="lg:col-span-7 lg:col-start-1 lg:row-start-2">
+        <h2 class="t-sub">Informasi produk</h2>
+        <p class="t-body mt-3 text-redup">{d.description}</p>
+      </div>
+    </div>
+  </div>
+
+  {/* Ground putih, bukan katun: sel line sheet berlatar kertas, dan di atas
+      band beige sel-sel itu berubah terbaca sebagai kartu mengambang —
+      persis yang dilarang docs/DESIGN-SYSTEM.md §6. */}
+  {
+    related.length > 0 && (
+      <section class="border-t border-garis">
+        <div class="wrap section-y">
+          <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+            <h2 class="t-section">Produk lain</h2>
+            <a
+              href={`/katalog/${category.id}`}
+              class="t-produk inline-flex min-h-11 items-center text-denim underline underline-offset-4 hover:text-tinta"
+            >
+              Lihat kategori {category.title}
+            </a>
+          </div>
+          <ProductGrid products={related} columns={4} class="mt-6" />
+        </div>
+      </section>
+    )
+  }
+</Base>

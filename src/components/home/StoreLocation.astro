@@ -1,0 +1,121 @@
+---
+import Button from '../Button.astro';
+import {
+  addressLines,
+  directionsUrl,
+  mapEmbedUrl,
+  mapsUrl,
+  openingHoursSummary,
+} from '../../lib/location';
+
+/**
+ * Alamat toko TIDAK pernah dikarang (brief §12).
+ *
+ * Seluruh isi blok ini datang dari `src/lib/location.ts`, yang mengembalikan
+ * null untuk apa pun yang belum diberikan pemilik. Yang belum ada tampil
+ * sebagai penanda; yang sudah ada langsung tampil tanpa perubahan kode.
+ *
+ * Keadaan sekarang: alamat dan jam buka sudah diberikan, jadi tautan
+ * petunjuk arah aktif — dirakit dari alamat itu, bukan dari koordinat.
+ * Tautan Google Maps dan kode sematan petanya belum ada (PLACEHOLDERS.md
+ * B6 dan B7), jadi tombol Maps mati dan kotak peta masih bergaris putus.
+ */
+const lines = addressLines();
+const peta = mapsUrl();
+const arah = directionsUrl();
+const embed = mapEmbedUrl();
+const jam = openingHoursSummary();
+---
+
+<section id="lokasi" class="scroll-mt-4">
+  <div class="wrap section-y">
+    <div class="grid gap-8 lg:grid-cols-12 lg:gap-12">
+      <div class="lg:col-span-5">
+        <h2 class="t-section">Toko</h2>
+
+        <dl class="mt-6">
+          <div class="border-t border-garis py-4">
+            <dt class="t-meta text-redup">Alamat</dt>
+            <dd class="t-body mt-1 not-italic">
+              {
+                lines.length > 0 ? (
+                  lines.map((line) => <span class="block">{line}</span>)
+                ) : (
+                  <span class="text-redup italic">
+                    Alamat lengkap menunggu data dari pemilik
+                  </span>
+                )
+              }
+            </dd>
+          </div>
+
+          <div class="border-t border-garis py-4">
+            <dt class="t-meta text-redup">Jam buka</dt>
+            <dd class="t-body mt-1">
+              {jam ?? <span class="text-redup italic">Menunggu data dari pemilik</span>}
+            </dd>
+          </div>
+        </dl>
+
+        <div class="mt-2">
+          <Button href={peta ?? undefined} disabled={!peta} variant="sekunder">
+            Buka di Google Maps
+          </Button>
+
+          {/* Penjelasan tombol mati ditaruh tepat di bawah tombolnya, sebelum
+              tautan petunjuk arah. Kalau urutannya dibalik, kalimat ini
+              terbaca seolah menjelaskan tautan di atasnya — padahal tautan
+              itu justru yang sudah bekerja. */}
+          {
+            !peta && (
+              <p class="t-meta mt-3 text-redup">
+                Tombol aktif setelah tautan Google Maps toko diberikan.
+              </p>
+            )
+          }
+
+          {/* Petunjuk arah dirakit dari alamat yang diberikan pemilik, bukan
+              dari koordinat tebakan. Selama alamatnya belum ada, tautannya
+              tidak dibuat sama sekali — bukan ditampilkan sebagai tombol mati
+              kedua. */}
+          {
+            arah && (
+              <p class="mt-3">
+                <a
+                  href={arah}
+                  target="_blank"
+                  rel="noopener"
+                  class="t-meta inline-flex min-h-11 items-center text-denim underline underline-offset-4 hover:text-tinta"
+                >
+                  Petunjuk arah ke toko
+                </a>
+              </p>
+            )
+          }
+        </div>
+      </div>
+
+      <div class="lg:col-span-6 lg:col-start-7">
+        {
+          embed ? (
+            <iframe
+              src={embed}
+              title="Peta lokasi toko HWR Collection"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              class="aspect-4/3 w-full border border-garis"
+            />
+          ) : (
+            <div class="flex aspect-4/3 w-full items-center justify-center border border-dashed border-batas bg-katun p-6">
+              <p class="t-meta max-w-[28ch] text-center text-redup">
+                {lines.length > 0
+                  ? 'Peta tampil di sini setelah kode sematan Google Maps diberikan.'
+                  : 'Peta lokasi toko tampil di sini setelah alamat dan tautan Google Maps diberikan.'}
+              </p>
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</section>

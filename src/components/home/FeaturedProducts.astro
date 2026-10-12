@@ -1,0 +1,21 @@
+---
+import ProductGrid from '../ProductGrid.astro';
+import type { Product } from '../../lib/products';
+
+interface Props {
+  products: Product[];
+}
+
+const { products } = Astro.props;
+---
+
+<section id="produk" class="wrap pb-12 md:pb-20 lg:pb-24">
+  <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+    <h2 class="t-section">Produk pilihan</h2>
+    <a href="/katalog" class="t-produk inline-flex min-h-11 items-center text-denim underline underline-offset-4 hover:text-tinta">
+      Lihat semua produk
+    </a>
+  </div>
+
+  <ProductGrid products={products} columns={4} class="mt-6" />
+</section>

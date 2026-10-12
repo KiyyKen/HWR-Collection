@@ -1,0 +1,274 @@
+---
+import CategoryFilter from './CategoryFilter.astro';
+import ProductGrid from '../ProductGrid.astro';
+import { site } from '../../config/site';
+import type { CategoryId } from '../../data/categories';
+import type { Product } from '../../lib/products';
+
+/**
+ * Isi halaman katalog.
+ *
+ * Tiga lapis, dari yang paling tahan banting ke yang paling kaya:
+ *
+ *   1. Tanpa JavaScript — seluruh produk kategori ini sudah ada di HTML,
+ *      dan filter kategori berupa link ke halaman statis. Katalog tetap
+ *      bisa dijelajahi sepenuhnya.
+ *   2. Dengan JavaScript — kolom cari dan pengurutan muncul, bekerja di
+ *      atas markup yang sama, dan menulis state ke query string.
+ *   3. Kembali dari halaman produk — state dibaca ulang dari URL.
+ *
+ * Script-nya vanilla, bukan island Preact: filter ini memanipulasi daftar
+ * yang sudah dirender server, jadi framework tidak memberi apa pun selain
+ * ±14 KB tambahan. Preact tetap disiapkan untuk daftar pesanan di Fase 4,
+ * tempat state lintas komponen memang dibutuhkan.
+ */
+interface Props {
+  heading: string;
+  intro: string;
+  products: Product[];
+  activeCategory: CategoryId | null;
+  counts: Map<CategoryId, number>;
+  total: number;
+}
+
+const { heading, intro, products, activeCategory, counts, total } = Astro.props;
+
+// Label sengaja pendek: kontrol ini selalu didahului kata 'Urutkan', jadi
+// 'Urutkan: Harga terendah' mengulang kata harga dan membuat select terpotong
+// di layar 390px.
+const sortOptions = [
+  { value: 'katalog', label: 'Urutan katalog' },
+  { value: 'harga-naik', label: 'Termurah' },
+  { value: 'harga-turun', label: 'Termahal' },
+];
+
+/**
+ * Label ikut masuk ke dalam kotak kontrol, bukan berdiri di luarnya.
+ *
+ * Dengan label di luar, tepi kiri input mulai ±30px dari margin halaman dan
+ * tidak sejajar dengan apa pun — padahal struktur halaman ini dibentuk oleh
+ * alignment (docs/DESIGN-SYSTEM.md §6). Label tetap terlihat, jadi tidak
+ * jatuh jadi placeholder-as-label.
+ *
+ * Focus ring pindah ke pembungkus lewat focus-within karena kontrol di
+ * dalamnya sudah kehilangan outline-nya sendiri.
+ */
+const fieldClass =
+  'flex min-h-11 items-center gap-2 rounded-kontrol border border-batas bg-kertas pl-3 ' +
+  'focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-jahit';
+
+const inputClass = 't-meta min-h-11 w-full bg-transparent pr-3 text-tinta focus:outline-none';
+---
+
+<div data-katalog>
+  <section class="wrap pt-8 pb-6 md:pt-12 md:pb-8">
+    <h1 class="t-section">{heading}</h1>
+    <p class="t-body mt-3 text-redup">{intro}</p>
+    <p class="t-meta mt-2 text-redup">
+      Semua harga per lusin. Minimum pemesanan {site.wholesale.minOrderDozen} lusin ({
+        site.wholesale.piecesPerDozen
+      } pcs).
+    </p>
+  </section>
+
+  <CategoryFilter active={activeCategory} counts={counts} total={total} />
+
+  <section class="wrap pt-5 pb-12 md:pt-6 md:pb-20 lg:pb-24">
+    {/*
+      Di mobile: kolom cari sebaris penuh di atas, lalu jumlah dan pengurutan
+      berbagi satu baris. Menumpuk ketiganya mendorong produk pertama ~50px
+      lebih jauh ke bawah, padahal produk yang harus terlihat lebih dulu.
+      Di layar lebar ketiganya muat dalam satu baris.
+
+      Urutan DOM tetap jumlah → cari → urut; `order` hanya mengatur tampilan.
+      Tidak ada jebakan urutan tab karena teks jumlah bukan elemen fokus.
+    */}
+    <div class="grid grid-cols-2 items-center gap-x-4 gap-y-3 md:grid-cols-[auto_1fr_auto] md:gap-x-6">
+      <p data-jumlah role="status" aria-atomic="true" class="t-meta order-2 text-redup md:order-0">
+        Menampilkan {products.length} produk
+      </p>
+
+      {/* Disembunyikan sampai JavaScript siap: tanpa JS kontrol ini tidak
+          bisa bekerja, dan kontrol mati lebih buruk daripada tidak ada. */}
+      <search
+        data-toolbar
+        hidden
+        class="order-1 col-span-2 md:order-0 md:col-span-1 md:justify-self-end"
+      >
+        <label class:list={[fieldClass, 'w-full md:w-72']}>
+          <span class="t-meta shrink-0 text-redup">Cari</span>
+          <input
+            type="search"
+            data-cari
+            inputmode="search"
+            enterkeyhint="search"
+            autocomplete="off"
+            placeholder="Nama atau kode produk"
+            class={inputClass}
+          />
+        </label>
+      </search>
+
+      <label
+        data-toolbar
+        hidden
+        class:list={[fieldClass, 'order-3 justify-self-end md:order-0']}
+      >
+        <span class="t-meta shrink-0 text-redup">Urutkan</span>
+        <select data-urut class:list={[inputClass, 'w-auto cursor-pointer']}>
+          {sortOptions.map((o) => <option value={o.value}>{o.label}</option>)}
+        </select>
+      </label>
+    </div>
+
+    <ProductGrid
+      products={products}
+      columns={4}
+      priorityCount={4}
+      headingLevel={2}
+      class="mt-5"
+      id="daftar-produk"
+    />
+
+    {/*
+      Baris status di atas sudah mengumumkan "Tidak ada produk yang cocok",
+      jadi di sini kalimatnya menyebut kata yang dicari — menambah informasi,
+      bukan mengulang kalimat yang sama persis.
+    */}
+    <div data-kosong hidden class="border-t border-garis py-14">
+      <p class="t-sub">
+        Tidak ada hasil untuk <span data-kosong-kata></span>
+      </p>
+      <p class="t-body mt-2 text-redup">
+        Coba kata lain, atau hapus pencarian untuk melihat semua produk di halaman ini.
+      </p>
+      <div class="mt-5 flex flex-wrap gap-3">
+        <button
+          type="button"
+          data-hapus
+          class="t-tombol inline-flex min-h-11 items-center justify-center rounded-kontrol border border-batas px-6 text-tinta transition-colors duration-(--durasi-state) hover:border-tinta hover:bg-katun"
+        >
+          Hapus pencarian
+        </button>
+        {
+          activeCategory && (
+            <a
+              href="/katalog"
+              class="t-tombol inline-flex min-h-11 items-center justify-center rounded-kontrol px-6 text-denim underline underline-offset-4 hover:text-tinta"
+            >
+              Cari di semua kategori
+            </a>
+          )
+        }
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  type Sort = 'katalog' | 'harga-naik' | 'harga-turun';
+
+  const root = document.querySelector<HTMLElement>('[data-katalog]');
+
+  if (root) {
+    const cari = root.querySelector<HTMLInputElement>('[data-cari]');
+    const urut = root.querySelector<HTMLSelectElement>('[data-urut]');
+    const daftar = root.querySelector<HTMLUListElement>('#daftar-produk');
+    const jumlah = root.querySelector<HTMLElement>('[data-jumlah]');
+    const kosong = root.querySelector<HTMLElement>('[data-kosong]');
+    const kosongKata = root.querySelector<HTMLElement>('[data-kosong-kata]');
+    const hapus = root.querySelector<HTMLButtonElement>('[data-hapus]');
+
+    const toolbars = root.querySelectorAll<HTMLElement>('[data-toolbar]');
+
+    if (cari && urut && daftar && jumlah && kosong && kosongKata && hapus) {
+      const items = Array.from(daftar.querySelectorAll<HTMLLIElement>('[data-produk]'));
+      const n = (el: HTMLElement, key: string) => Number(el.dataset[key] ?? 0);
+
+      const urutan: Record<Sort, (a: HTMLLIElement, b: HTMLLIElement) => number> = {
+        katalog: (a, b) => n(a, 'posisi') - n(b, 'posisi'),
+        'harga-naik': (a, b) => n(a, 'harga') - n(b, 'harga') || n(a, 'posisi') - n(b, 'posisi'),
+        'harga-turun': (a, b) => n(b, 'harga') - n(a, 'harga') || n(a, 'posisi') - n(b, 'posisi'),
+      };
+
+      const isSort = (v: string | null): v is Sort => !!v && v in urutan;
+
+      // Kontrol baru ditampilkan setelah script benar-benar jalan.
+      toolbars.forEach((el) => { el.hidden = false; });
+
+      function bacaUrl() {
+        const p = new URLSearchParams(location.search);
+        cari!.value = p.get('cari') ?? '';
+        const u = p.get('urut');
+        urut!.value = isSort(u) ? u : 'katalog';
+      }
+
+      function tulisUrl() {
+        const p = new URLSearchParams(location.search);
+        const q = cari!.value.trim();
+        if (q) p.set('cari', q);
+        else p.delete('cari');
+        if (urut!.value !== 'katalog') p.set('urut', urut!.value);
+        else p.delete('urut');
+        const qs = p.toString();
+        // replaceState, bukan pushState: mengetik tidak boleh menumpuk
+        // riwayat. URL tetap bisa dibagikan, dan kembali dari halaman
+        // produk memulihkan filter yang sama.
+        history.replaceState(null, '', location.pathname + (qs ? `?${qs}` : ''));
+      }
+
+      function terapkan(sinkronUrl = true) {
+        const q = cari!.value.trim().toLowerCase();
+
+        let tampil = 0;
+        for (const li of items) {
+          const cocok = !q || (li.dataset.teks ?? '').includes(q);
+          li.hidden = !cocok;
+          if (cocok) tampil += 1;
+        }
+
+        const pembanding = isSort(urut!.value) ? urutan[urut!.value] : urutan.katalog;
+        const terlihat = items.filter((li) => !li.hidden).sort(pembanding);
+        for (const li of terlihat) daftar!.appendChild(li);
+        for (const li of items) if (li.hidden) daftar!.appendChild(li);
+
+        jumlah!.textContent =
+          tampil === 0 ? 'Tidak ada produk yang cocok' : `Menampilkan ${tampil} produk`;
+
+        daftar!.hidden = tampil === 0;
+        kosong!.hidden = tampil !== 0;
+        kosongKata!.textContent = q ? `“${cari!.value.trim()}”.` : '';
+
+        if (sinkronUrl) tulisUrl();
+      }
+
+      cari.addEventListener('input', () => terapkan());
+      urut.addEventListener('change', () => terapkan());
+
+      hapus.addEventListener('click', () => {
+        cari!.value = '';
+        terapkan();
+        cari!.focus();
+      });
+
+      // Kembali/maju browser dan pemulihan dari bfcache.
+      window.addEventListener('popstate', () => {
+        bacaUrl();
+        terapkan(false);
+      });
+      window.addEventListener('pageshow', (e) => {
+        if (e.persisted) {
+          bacaUrl();
+          terapkan(false);
+        }
+      });
+
+      // Saat halaman dibuka tanpa cari/urut di URL, daftar yang dirender
+      // server SUDAH benar. Menjalankan terapkan() tetap akan memindahkan
+      // ke-24 <li> lewat appendChild dan memaksa satu reflow penuh untuk
+      // hasil yang identik — kerja mahal di ponsel demi nol perubahan.
+      bacaUrl();
+      if (cari.value || urut.value !== 'katalog') terapkan(false);
+    }
+  }
+</script>

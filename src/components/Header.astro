@@ -1,0 +1,140 @@
+---
+import Wordmark from './Wordmark.astro';
+import IconWhatsApp from './IconWhatsApp.astro';
+import OrderButton from './order/OrderButton.tsx';
+import { generalMessage, whatsappLink } from '../lib/whatsapp';
+
+const nav = [
+  { href: '/katalog', label: 'Katalog' },
+  { href: '/#kategori', label: 'Kategori' },
+  { href: '/#cara-pesan', label: 'Cara pesan' },
+  { href: '/#lokasi', label: 'Lokasi' },
+];
+
+const waHref = whatsappLink(generalMessage());
+const path = Astro.url.pathname;
+---
+
+<header class="border-b border-garis bg-kertas">
+  <div class="wrap flex h-16 items-center justify-between gap-6 md:h-20">
+    <a href="/" class="inline-flex min-h-11 items-center rounded-kontrol" aria-label="HWR Collection, ke beranda">
+      <Wordmark size="md" />
+    </a>
+
+    <nav aria-label="Navigasi utama" class="hidden md:block">
+      <ul class="flex items-center gap-8">
+        {
+          nav.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                aria-current={path === item.href ? 'page' : undefined}
+                class="t-meta inline-block py-2 text-tinta underline-offset-8 hover:underline aria-[current=page]:underline aria-[current=page]:decoration-jahit aria-[current=page]:decoration-2"
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="flex items-center gap-2">
+      {/*
+        Island pesanan. client:idle, bukan client:load: daftar pesanan bukan
+        hal pertama yang dibutuhkan saat halaman dibuka, dan menundanya
+        menjaga waktu interaktif halaman katalog.
+
+        Tombolnya hanya muncul kalau daftar berisi, jadi tanpa JavaScript
+        tidak ada apa pun yang tertinggal di header.
+      */}
+      <OrderButton client:pesanan />
+
+      {
+        waHref ? (
+          <a
+            href={waHref}
+            target="_blank"
+            rel="noopener"
+            data-wa-umum
+            class="t-tombol hidden min-h-11 items-center gap-2 rounded-kontrol bg-tinta px-5 text-kertas transition-colors duration-(--durasi-state) hover:bg-denim md:inline-flex"
+          >
+            <IconWhatsApp />
+            Pesan via WhatsApp
+          </a>
+        ) : (
+          <a
+            href="/#pesan"
+            data-wa-umum
+            class="t-tombol hidden min-h-11 items-center gap-2 rounded-kontrol bg-tinta px-5 text-kertas transition-colors duration-(--durasi-state) hover:bg-denim md:inline-flex"
+          >
+            <IconWhatsApp />
+            Pesan via WhatsApp
+          </a>
+        )
+      }
+
+      <button
+        type="button"
+        id="menu-toggle"
+        aria-expanded="false"
+        aria-controls="menu-mobile"
+        class="inline-flex size-11 items-center justify-center rounded-kontrol border border-garis md:hidden"
+      >
+        <span class="sr-only">Buka menu</span>
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="menu-mobile" hidden class="border-t border-garis md:hidden">
+    <nav aria-label="Navigasi utama mobile" class="wrap py-2">
+      <ul class="divide-y divide-garis">
+        {
+          nav.map((item) => (
+            <li>
+              <a href={item.href} class="t-sub flex min-h-14 items-center">
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <a
+        href={waHref ?? '/#pesan'}
+        target={waHref ? '_blank' : undefined}
+        rel={waHref ? 'noopener' : undefined}
+        class="t-tombol my-4 flex min-h-12 items-center justify-center gap-2 rounded-kontrol bg-tinta px-5 text-kertas"
+      >
+        <IconWhatsApp />
+        Pesan via WhatsApp
+      </a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const toggle = document.getElementById('menu-toggle');
+  const panel = document.getElementById('menu-mobile');
+
+  if (toggle && panel) {
+    const setOpen = (open: boolean) => {
+      panel.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.querySelector('.sr-only')!.textContent = open ? 'Tutup menu' : 'Buka menu';
+    };
+
+    toggle.addEventListener('click', () => {
+      setOpen(toggle.getAttribute("aria-expanded") !== "true");
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === "Escape" && toggle.getAttribute("aria-expanded") === "true") {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+  }
+</script>

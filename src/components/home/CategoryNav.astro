@@ -1,0 +1,48 @@
+---
+import ProductImage from '../ProductImage.astro';
+import { categories } from '../../data/categories';
+import { getCategoryCovers, productAlt } from '../../lib/products';
+
+/**
+ * Kategori naik ke atas produk pilihan: pembeli grosir datang dengan
+ * kategori di kepala ("saya cari cargo anak"), bukan untuk dibujuk.
+ *
+ * Mobile memakai scroll horizontal dengan snap supaya keenam kategori
+ * tetap satu baris dan tidak memakan tinggi layar.
+ */
+const covers = await getCategoryCovers();
+---
+
+<section id="kategori" class="wrap section-y scroll-mt-4">
+  <h2 class="t-section">Kategori</h2>
+
+  <ul
+    class="mt-6 -mx-5 flex snap-x snap-mandatory scroll-pl-5 gap-4 overflow-x-auto px-5 pb-2 md:mx-0 md:grid md:grid-cols-3 md:gap-5 md:scroll-pl-0 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-6"
+  >
+    {
+      categories.map((category) => {
+        const cover = covers.get(category.id);
+        return (
+          <li class="w-[44%] shrink-0 snap-start sm:w-[30%] md:w-auto">
+            <a href={`/katalog/${category.id}`} class="group block">
+              <div class="aspect-4/5 w-full overflow-hidden bg-latar-foto">
+                {cover && (
+                  <ProductImage
+                    id={cover.id}
+                    image={cover.data.image}
+                    alt={productAlt(cover.data)}
+                    sizes="(min-width: 1024px) 200px, (min-width: 768px) 30vw, 44vw"
+                    widths={[200, 320, 480]}
+                  />
+                )}
+              </div>
+              <h3 class="t-produk mt-3 border-t border-garis pt-3 underline-offset-4 group-hover:underline">
+                {category.title}
+              </h3>
+            </a>
+          </li>
+        );
+      })
+    }
+  </ul>
+</section>

@@ -1,0 +1,54 @@
+{
+  "name": "hwr-collection",
+  "type": "module",
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "prebuild": "node scripts/validate-data.mjs",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "validate": "node scripts/validate-data.mjs",
+    "gen:photos": "node scripts/gen-placeholder-photos.mjs",
+    "shoot": "node scripts/shoot.mjs",
+    "a11y": "node scripts/a11y.mjs",
+    "perf": "node scripts/perf.mjs",
+    "journey": "node scripts/journey.mjs",
+    "cms": "npm --prefix sanity run dev",
+    "cms:hook": "node scripts/rebuild-hook.mjs",
+    "test:katalog": "node scripts/test-katalog.mjs",
+    "test:pesanan": "node scripts/test-pesanan.mjs",
+    "test:data": "node scripts/test-data-asli.mjs",
+    "test:cms": "node scripts/test-cms.mjs",
+    "test:hook": "node scripts/test-hook.mjs",
+    "test:whatsapp": "node scripts/test-whatsapp.mjs",
+    "cms:export": "node scripts/export-sanity.mjs",
+    "test:migrasi": "node scripts/test-migrasi.mjs"
+  },
+  "dependencies": {
+    "@astrojs/preact": "^6.0.5",
+    "@astrojs/sitemap": "^3.7.4",
+    "@nanostores/preact": "^1.1.0",
+    "@sanity/client": "^8.6.2",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.3.3",
+    "nanostores": "^1.5.3",
+    "preact": "^10.29.8",
+    "tailwindcss": "^4.3.3",
+    "zod": "^4.6.5"
+  },
+  "allowScripts": {
+    "esbuild": true
+  },
+  "description": "Website resmi HWR Collection — grosir celana anak & dewasa",
+  "private": "true",
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "playwright": "^1.63.0",
+    "sharp": "^0.35.4",
+    "typescript": "^6.0.3"
+  }
+}

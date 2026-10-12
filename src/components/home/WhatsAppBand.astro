@@ -1,0 +1,45 @@
+---
+import Button from '../Button.astro';
+import IconWhatsApp from '../IconWhatsApp.astro';
+import { generalMessage, whatsappLink, hasWhatsappNumber } from '../../lib/whatsapp';
+
+const waHref = whatsappLink(generalMessage());
+const ready = hasWhatsappNumber();
+---
+
+<section id="pesan" class="scroll-mt-4 bg-tinta text-kertas">
+  <div class="wrap py-14 md:py-20">
+    <div class="lg:grid lg:grid-cols-12 lg:items-end lg:gap-12">
+      <div class="lg:col-span-7">
+        <h2 class="t-section">Siap pesan?</h2>
+        <p class="t-body mt-4 text-kabut">
+          Kirim daftar produk dan jumlah lusinnya. Kami balas dengan ketersediaan stok,
+          total, dan ongkir.
+        </p>
+      </div>
+
+      <div class="mt-7 lg:col-span-4 lg:col-start-9 lg:mt-0 lg:justify-self-end">
+        <Button
+          href={waHref ?? undefined}
+          variant="primer-gelap"
+          disabled={!ready}
+          block
+          target={ready ? '_blank' : undefined}
+          rel={ready ? 'noopener' : undefined}
+          aria-describedby={ready ? undefined : 'wa-belum-siap'}
+        >
+          <IconWhatsApp tone={ready ? 'merek' : 'ikut'} />
+          Pesan via WhatsApp
+        </Button>
+
+        {
+          !ready && (
+            <p id="wa-belum-siap" class="t-meta mt-3 text-kabut">
+              Tombol aktif setelah nomor WhatsApp toko diisi di konfigurasi situs.
+            </p>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</section>

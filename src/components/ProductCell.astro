@@ -1,0 +1,75 @@
+---
+import ProductImage from './ProductImage.astro';
+import { formatPrice, formatSizeRange, formatColorCount } from '../lib/format';
+import { productAlt, type Product } from '../lib/products';
+
+/**
+ * Satu sel line sheet.
+ *
+ * Bukan kartu: tidak ada radius, bayangan, atau border keliling sendiri.
+ * Pemisahnya adalah garis rambut milik grid — lihat ProductGrid.astro.
+ *
+ * Tepat SATU link per sel: nama produk, dengan overlay ::after selebar sel.
+ * Baris "Detail & pesan" adalah penanda visual (aria-hidden), bukan link
+ * kedua — dua link ke tujuan yang sama membuat pembaca layar mengulang.
+ */
+interface Props {
+  product: Product;
+  /** Foto paling atas di halaman dimuat lebih awal untuk LCP. */
+  priority?: boolean;
+  /**
+   * Level heading nama produk, menyesuaikan konteks halaman.
+   * Di beranda grid berada di bawah h2 'Produk pilihan', jadi h3.
+   * Di katalog produk adalah konten utama di bawah h1, jadi h2.
+   */
+  headingLevel?: 2 | 3;
+  sizes?: string;
+}
+
+const {
+  product,
+  priority = false,
+  headingLevel = 3,
+  sizes = '(min-width: 1320px) 320px, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw',
+} = Astro.props;
+
+const d = product.data;
+const colorCount = formatColorCount(d.colors);
+const Heading = `h${headingLevel}` as const;
+---
+
+<article class="group relative flex h-full flex-col bg-kertas">
+  <div class="aspect-4/5 w-full overflow-hidden bg-latar-foto">
+    <ProductImage
+      id={product.id}
+      image={d.image}
+      alt={productAlt(d)}
+      sizes={sizes}
+      priority={priority}
+    />
+  </div>
+
+  <div class="flex flex-1 flex-col gap-1 p-4 md:p-5">
+    <p class="t-meta text-redup">{d.code}</p>
+
+    <Heading class="t-produk">
+      <a
+        href={`/produk/${product.id}`}
+        class="underline-offset-4 after:absolute after:inset-0 group-hover:underline"
+      >
+        {d.name}
+      </a>
+    </Heading>
+
+    <p class="t-harga mt-1">
+      {formatPrice(d.pricePerDozen, d.priceType)}
+    </p>
+
+    <p class="t-meta mt-auto flex flex-wrap gap-x-4 pt-3 text-redup">
+      <span>Ukuran {formatSizeRange(d.sizes)}</span>
+      {colorCount && <span>{colorCount}</span>}
+    </p>
+
+    <p class="t-meta mt-1 text-denim group-hover:underline" aria-hidden="true">Detail &amp; pesan</p>
+  </div>
+</article>

@@ -1,0 +1,73 @@
+---
+import { site } from '../config/site';
+
+/**
+ * Identitas HWR Collection di header dan footer.
+ *
+ * Dua keadaan, satu komponen:
+ *
+ *   `site.brand.logo` null  → wordmark SEMENTARA berbasis Archivo.
+ *   `site.brand.logo` diisi → file logo asli dari folder public/.
+ *
+ * Mengganti logo cukup dengan menaruh filenya di public/ dan mengisi
+ * `brand.logo` di src/config/site.ts. Tidak ada komponen lain yang berubah,
+ * dan tinggi barisnya tetap dikunci lewat `logoHeight` supaya header dan
+ * footer tidak bergeser.
+ *
+ * HWR adalah gabungan inisial nama anggota keluarga pemilik, jadi ditulis
+ * kapital sebagai inisial, bukan sebagai label all-caps.
+ */
+interface Props {
+  /** Ground tempat wordmark diletakkan — menentukan warna teks sekundernya. */
+  ground?: 'terang' | 'gelap';
+  /** Ukuran dasar; sisanya mengikuti secara proporsional. */
+  size?: 'sm' | 'md' | 'lg';
+  class?: string;
+}
+
+const { ground = 'terang', size = 'md', class: className } = Astro.props;
+
+const sizes = {
+  sm: 'text-base',
+  md: 'text-lg',
+  lg: 'text-2xl',
+} as const;
+
+/** Logo asli tampil sedikit lebih besar di footer, seperti wordmark-nya. */
+const logoScale = { sm: 0.85, md: 1, lg: 1.35 } as const;
+const logo = site.brand.logo;
+const logoHeight = Math.round(site.brand.logoHeight * logoScale[size]);
+---
+
+{
+  logo ? (
+    <img
+      src={logo}
+      alt={site.brand.logoAlt}
+      height={logoHeight}
+      style={`height:${logoHeight}px;width:auto`}
+      class:list={['block w-auto', className]}
+    />
+  ) : (
+    <span
+      class:list={[
+        't-wordmark inline-flex items-baseline gap-[0.36em] whitespace-nowrap',
+        sizes[size],
+        className,
+      ]}
+    >
+      <span>HWR</span>
+      <span
+        class:list={[
+          'font-medium',
+          'text-[0.82em]',
+          'tracking-[0.02em]',
+          ground === 'gelap' ? 'text-kabut' : 'text-redup',
+        ]}
+        style="font-stretch: 100%;"
+      >
+        Collection
+      </span>
+    </span>
+  )
+}

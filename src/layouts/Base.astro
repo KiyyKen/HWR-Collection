@@ -1,0 +1,115 @@
+---
+import '../styles/global.css';
+
+import DevDataNotice from '../components/DevDataNotice.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../config/site';
+import { openingHoursSpec, postalAddress, storeEmail, storePhone } from '../lib/location';
+import { abs } from '../lib/seo';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Halaman yang tidak boleh diindeks (misal hasil filter duplikat). */
+  noindex?: boolean;
+  /** JSON-LD tambahan khusus halaman. */
+  schema?: Record<string, unknown> | Record<string, unknown>[];
+}
+
+const { title, description, noindex = false, schema } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url);
+const ogImage = new URL(site.brand.ogImage, Astro.site ?? site.url);
+const fullTitle = title === site.name ? title : `${title} — ${site.name}`;
+
+/*
+  Identitas toko untuk mesin pencari.
+
+  Alamat, telepon, dan jam buka hanya ikut kalau datanya sudah diberikan
+  pemilik — data palsu di JSON-LD lebih berbahaya daripada field kosong,
+  karena mesin pencari menampilkannya sebagai fakta. Field-field itu masuk
+  sendiri begitu `src/config/site.ts` diisi; tidak ada saklar lain.
+*/
+const address = postalAddress();
+const hours = openingHoursSpec();
+const phone = storePhone();
+const email = storeEmail();
+
+const organization = {
+  '@context': 'https://schema.org',
+  '@type': 'Store',
+  name: site.name,
+  description: site.description,
+  url: abs(),
+  image: ogImage.href,
+  areaServed: site.wholesale.shippingArea,
+  ...(address ? { address } : {}),
+  ...(hours.length > 0 ? { openingHours: hours } : {}),
+  ...(phone ? { telephone: phone } : {}),
+  ...(email ? { email } : {}),
+};
+
+const schemas = [organization, ...(schema ? (Array.isArray(schema) ? schema : [schema]) : [])];
+---
+
+<!doctype html>
+<html lang={site.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex,follow" />}
+
+    {/* Ikon sementara. Ganti file di public/, jalurnya diatur di site.brand. */}
+    <link rel="icon" type="image/svg+xml" href={site.brand.favicon} />
+    <link rel="icon" sizes="any" href={site.brand.faviconFallback} />
+    <link rel="apple-touch-icon" href={site.brand.favicon} />
+
+    <link
+      rel="preload"
+      href="/fonts/archivo-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content={String(site.brand.ogImageWidth)} />
+    <meta property="og:image:height" content={String(site.brand.ogImageHeight)} />
+    <meta property="og:image:alt" content={site.brand.ogImageAlt} />
+    <meta property="og:locale" content="id_ID" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <meta name="theme-color" content={site.brand.themeColor} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(schemas)} is:inline />
+  </head>
+
+  <body>
+    <a
+      href="#konten"
+      class="t-tombol sr-only rounded-kontrol focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:bg-tinta focus:px-4 focus:py-3 focus:text-kertas"
+    >
+      Lompat ke konten
+    </a>
+
+    <DevDataNotice />
+    <Header />
+
+    <main id="konten">
+      <slot />
+    </main>
+
+    <Footer />
+  </body>
+</html>

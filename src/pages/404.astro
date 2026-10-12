@@ -1,0 +1,46 @@
+---
+import Base from '../layouts/Base.astro';
+import Button from '../components/Button.astro';
+import { categories } from '../data/categories';
+import { site } from '../config/site';
+---
+
+<Base
+  title="Halaman tidak ditemukan"
+  description="Halaman yang dicari tidak ada di situs HWR Collection."
+  noindex
+>
+  <section class="wrap py-16 md:py-24 lg:py-32">
+    <p class="t-meta text-redup">Kesalahan 404</p>
+    <h1 class="t-section mt-2">Halaman ini tidak ada.</h1>
+    <p class="t-body mt-4 text-redup">
+      {/* Spasi sebelum {site.name} ditulis eksplisit: baris baru di posisi
+          ini ikut terbuang saat dirender, dan hasilnya "katalogHWR". */}
+      Tautannya mungkin salah ketik, atau produknya sudah tidak ada di katalog{' '}
+      {site.name}. Semua produk yang tersedia ada di katalog.
+    </p>
+
+    <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+      <Button href="/katalog" variant="primer" block>Buka katalog</Button>
+      <Button href="/" variant="sekunder" block>Kembali ke beranda</Button>
+    </div>
+
+    <nav aria-label="Kategori produk" class="mt-12 border-t border-garis pt-6">
+      <h2 class="t-sub">Telusuri per kategori</h2>
+      <ul class="mt-3 flex flex-wrap gap-x-6">
+        {
+          categories.map((category) => (
+            <li>
+              <a
+                href={`/katalog/${category.id}`}
+                class="t-meta inline-flex min-h-11 items-center text-denim underline underline-offset-4 hover:text-tinta"
+              >
+                {category.title}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </section>
+</Base>

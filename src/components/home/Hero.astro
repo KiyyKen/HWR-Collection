@@ -1,0 +1,68 @@
+---
+import Button from '../Button.astro';
+import IconWhatsApp from '../IconWhatsApp.astro';
+import ProductImage from '../ProductImage.astro';
+import { productAlt, type Product } from '../../lib/products';
+import { generalMessage, whatsappLink } from '../../lib/whatsapp';
+
+interface Props {
+  /** Produk yang fotonya dipakai sebagai gambar utama halaman. */
+  cover: Product;
+}
+
+const { cover } = Astro.props;
+const waHref = whatsappLink(generalMessage());
+---
+
+{/*
+  Urutan di mobile: judul → foto → penjelasan + tombol.
+
+  Foto 4:5 selebar layar setinggi ~440px; kalau foto diletakkan lebih dulu,
+  kalimat yang menjelaskan HWR jualan apa terdorong ke luar layar pertama.
+  Brief §2 nomor 1 menuntut pengunjung langsung paham. Di layar besar kedua
+  kolom tampil berdampingan seperti rencana semula.
+*/}
+<section class="wrap pt-8 pb-12 md:pt-12 md:pb-16 lg:grid lg:grid-cols-12 lg:gap-x-12 lg:gap-y-6 lg:pt-20 lg:pb-20">
+  <h1 class="t-hero lg:col-span-6 lg:col-start-1 lg:row-start-1 lg:self-end">
+    Grosir celana, langsung dari HWR Collection.
+  </h1>
+
+{/*
+  Rasio 4:5 tidak pernah diganti, termasuk di tablet. Crop ke persegi
+  memotong ban pinggang dan keliman celana. Yang dibatasi lebarnya, bukan
+  rasionya, supaya tingginya tetap wajar di layar sedang.
+*/}
+  <div class="mx-auto mt-7 w-full max-w-104 lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1 lg:mx-0 lg:mt-0 lg:max-w-none lg:self-center">
+    <div class="aspect-4/5 w-full overflow-hidden bg-latar-foto">
+      <ProductImage
+        id={cover.id}
+        image={cover.data.image}
+        alt={productAlt(cover.data)}
+        sizes="(min-width: 1024px) 500px, 100vw"
+        widths={[480, 640, 960, 1280]}
+        priority
+      />
+    </div>
+  </div>
+
+  <div class="mt-7 lg:col-span-6 lg:col-start-1 lg:row-start-2 lg:mt-0 lg:self-start">
+    <p class="t-body text-redup">
+      Jeans anak, celana training, cargo, kolor, dan Hawai. Minimum pemesanan 1 lusin,
+      harga per lusin, dan kami kirim ke seluruh Indonesia.
+    </p>
+
+    <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+      <Button href="/katalog" variant="primer" block>Lihat katalog</Button>
+      <Button
+        href={waHref ?? '#pesan'}
+        variant="sekunder"
+        block
+        target={waHref ? '_blank' : undefined}
+        rel={waHref ? 'noopener' : undefined}
+      >
+        <IconWhatsApp />
+        Pesan via WhatsApp
+      </Button>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,53 @@
+---
+/**
+ * Satu-satunya tempat penomoran dipakai di situs ini, karena ini memang
+ * urutan. Penanda 01/02/03 di section lain sudah ditolak di
+ * docs/DESIGN-SYSTEM.md §9.
+ */
+const steps = [
+  {
+    title: 'Pilih produk dan jumlah lusin',
+    body: 'Telusuri katalog, tentukan model dan berapa lusin per model. Tidak perlu daftar akun.',
+  },
+  {
+    title: 'Kirim daftarnya lewat WhatsApp',
+    body: 'Daftar pesanan otomatis tersusun rapi di pesan WhatsApp, lengkap dengan kode produk dan jumlahnya.',
+  },
+  {
+    title: 'Kami konfirmasi stok, total, dan pengiriman',
+    body: 'Kami balas dengan ketersediaan ukuran dan warna, total akhir, serta ongkir ke alamat Anda.',
+  },
+];
+---
+
+<section id="cara-pesan" class="scroll-mt-4 bg-katun">
+  <div class="wrap section-y">
+    <h2 class="t-section">Cara pesan</h2>
+
+    <ol class="mt-8 grid gap-px border border-garis bg-garis md:grid-cols-3">
+      {
+        steps.map((step, i) => (
+          <li class="bg-katun p-5 md:p-6">
+            {/*
+              Angka ini sempat memakai Jahit dan gagal kontras: emas di atas
+              katun hanya 2,65:1, padahal teks 16px butuh 4.5:1. Aturannya
+              sudah ada di docs/DESIGN-SYSTEM.md §2 — Jahit di atas ground
+              terang hanya untuk garis, underline, dan focus ring, tidak
+              pernah untuk teks — dan di sinilah satu-satunya tempat aturan
+              itu terlanggar. `aria-hidden` tidak menolongnya: angkanya tetap
+              terlihat mata, jadi WCAG 1.4.3 tetap berlaku.
+            */}
+            <span class="t-harga block text-tinta" aria-hidden="true">
+              {i + 1}
+            </span>
+            <h3 class="t-sub mt-3">
+              <span class="sr-only">Langkah {i + 1}: </span>
+              {step.title}
+            </h3>
+            <p class="t-body mt-2 text-redup">{step.body}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>

@@ -1,0 +1,75 @@
+---
+import { site } from '../../config/site';
+
+/**
+ * Proposisi grosir sebagai tabel spesifikasi, bukan grid kartu "Kenapa
+ * pilih kami". Alasannya di docs/DESIGN-SYSTEM.md §9: tabel spec hanya bisa
+ * diisi hal yang memang benar, jadi tidak ada ruang untuk klaim karangan.
+ *
+ * Baris yang kebijakannya belum dikonfirmasi pemilik ditandai jelas dan
+ * TIDAK diisi tebakan. Lihat PLACEHOLDERS.md nomor 23–30.
+ */
+const { wholesale, wholesalePolicy, orderFlow } = site;
+
+/**
+ * `wajib: true` → baris tetap tampil walau nilainya belum ada, dengan
+ * penanda "menunggu konfirmasi pemilik". Ini pertanyaan yang pasti
+ * ditanyakan reseller; menyembunyikannya hanya memindahkan pertanyaan itu
+ * ke chat.
+ *
+ * `wajib: false` → baris muncul hanya kalau pemilik mengisinya. Kebijakan
+ * kodi, eceran, dan syarat reseller belum tentu ada di bisnis ini, jadi
+ * tabelnya tidak boleh memamerkan daftar kosong yang seolah-olah hilang.
+ */
+const rows: { label: string; value: string | null; wajib: boolean }[] = [
+  {
+    label: 'Minimum pemesanan',
+    value: `${wholesale.minOrderDozen} lusin (${wholesale.piecesPerDozen} pcs)`,
+    wajib: true,
+  },
+  { label: 'Satuan harga', value: 'Per lusin', wajib: true },
+  { label: 'Pilihan ukuran', value: wholesalePolicy.mixedSizes, wajib: true },
+  { label: 'Pilihan warna', value: wholesalePolicy.mixedColors, wajib: true },
+  { label: 'Campur model', value: wholesalePolicy.mixedModels, wajib: false },
+  { label: 'Harga kodi / karton', value: wholesalePolicy.bulkTier, wajib: false },
+  { label: 'Eceran satuan', value: wholesalePolicy.retail, wajib: false },
+  { label: 'Harga reseller', value: wholesalePolicy.reseller, wajib: false },
+  // Pengiriman ikut di tabel ini, bukan jadi section tersendiri. Section
+  // terpisah hanya mengulang baris "Pengiriman" dan menyisakan satu blok
+  // hampir kosong di tengah halaman — lihat catatan di docs/WIREFRAMES.md.
+  { label: 'Pengiriman', value: wholesale.shippingArea, wajib: true },
+  { label: 'Ongkos kirim', value: orderFlow.shippingCost, wajib: true },
+  { label: 'Ekspedisi', value: wholesalePolicy.couriers, wajib: true },
+  { label: 'Waktu proses', value: wholesalePolicy.processingTime, wajib: false },
+  { label: 'Pembayaran', value: wholesalePolicy.payment ?? orderFlow.payment, wajib: true },
+].filter((row) => row.wajib || row.value !== null);
+---
+
+<section class="bg-tinta text-kertas">
+  <div class="wrap section-y">
+    <div class="lg:grid lg:grid-cols-12 lg:gap-12">
+      <div class="lg:col-span-4">
+        <h2 class="t-section">Cara kerja grosir di HWR</h2>
+        <p class="t-body mt-4 text-kabut">
+          Semua produk dijual per lusin. Stok dan total akhir kami konfirmasi lewat
+          WhatsApp sebelum pesanan diproses.
+        </p>
+      </div>
+
+      <dl class="mt-8 lg:col-span-7 lg:col-start-6 lg:mt-0">
+        {
+          rows.map((row) => (
+            <div class="grid grid-cols-1 gap-1 border-b border-kabut/25 py-4 first:border-t sm:grid-cols-[minmax(0,14rem)_1fr] sm:gap-6">
+              <dt class="t-meta text-kabut">{row.label}</dt>
+              <dd class="t-produk">
+                {row.value ?? (
+                  <span class="text-kabut italic">Menunggu konfirmasi pemilik</span>
+                )}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </div>
+</section>

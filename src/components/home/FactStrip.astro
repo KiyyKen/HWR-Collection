@@ -1,0 +1,33 @@
+---
+import { site } from '../../config/site';
+import { lowerLead } from '../../lib/format';
+
+/**
+ * Tiga fakta penentu — grosir, minimum 1 lusin, jangkauan kirim — dipasang
+ * tepat di bawah header, bukan menunggu section di tengah halaman. Ini yang
+ * membuat pengunjung memutuskan lanjut atau pergi (docs/WIREFRAMES.md).
+ */
+const facts = [
+  `Grosir, minimum ${site.wholesale.minOrderDozen} lusin`,
+  `Kirim ke ${lowerLead(site.wholesale.shippingArea)}`,
+];
+---
+
+<div class="border-b border-garis bg-katun">
+  <div class="wrap">
+    <ul class="flex flex-wrap items-center">
+      {
+        facts.map((fact, i) => (
+          <li
+            class:list={[
+              't-meta py-2.5 text-tinta',
+              i === 0 ? 'pr-5' : 'border-l border-garis pl-5',
+            ]}
+          >
+            {fact}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</div>

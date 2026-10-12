@@ -1,0 +1,29 @@
+---
+import { countDummyProducts } from '../lib/products';
+import { hasWhatsappNumber } from '../lib/whatsapp';
+
+/**
+ * Pita peringatan data pengembangan.
+ *
+ * Tampil selama masih ada produk bertanda `dummy: true` atau nomor WhatsApp
+ * masih placeholder. Hilang sendiri begitu data asli masuk — tidak ada flag
+ * yang perlu dimatikan manual.
+ */
+const dummyCount = await countDummyProducts();
+const waMissing = !hasWhatsappNumber();
+
+const issues = [
+  dummyCount > 0 ? `${dummyCount} produk masih data contoh` : null,
+  waMissing ? 'nomor WhatsApp belum diisi' : null,
+].filter(Boolean);
+---
+
+{
+  issues.length > 0 && (
+    <div class="bg-jahit text-tinta">
+      <p class="wrap t-meta py-2">
+        <strong class="font-semibold">Versi pengembangan</strong> — {issues.join(', ')}.
+      </p>
+    </div>
+  )
+}
