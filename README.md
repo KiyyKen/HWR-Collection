@@ -138,3 +138,11 @@ Setelah mengganti apa pun: `npm run validate`.
 - [docs/PELUNCURAN.md](docs/PELUNCURAN.md) — checklist sebelum situs boleh dipublikasikan
 - [docs/PLAN.md](docs/PLAN.md) — fase implementasi
 - [CLAUDE.md](CLAUDE.md) — aturan kerja di repo ini
+
+## Lisensi
+
+Kode dalam repositori ini dirilis di bawah [MIT](LICENSE).
+
+Yang **tidak** termasuk, dan tetap milik HWR Collection: nama dan identitas merek HWR Collection, teks serta informasi bisnis yang spesifik untuk toko itu, dan foto produk asli kalau suatu saat menggantikan foto contoh di sini. Foto yang ada sekarang dibuat oleh `scripts/gen-placeholder-photos.mjs` dan ikut lisensi yang sama dengan kodenya.
+
+*The MIT license covers the code. The HWR Collection name, brand identity, and business information are not included and remain the property of HWR Collection.*
