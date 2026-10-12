@@ -28,6 +28,14 @@ Beberapa hal yang membentuk proyek ini:
 
 Pita kuning di atas setiap halaman adalah penanda versi pengembangan. Ia menghitung sendiri berapa produk yang masih data contoh, dan hilang begitu tidak ada lagi yang ditandai `dummy`.
 
+### Panel admin
+
+[![Sanity Studio dengan daftar produk dan form editornya](docs/img/cms.webp)](docs/img/cms.webp)
+
+Produk diurus dari Sanity Studio, bukan dari file. Daftar di tengah menampilkan kode artikel dan harga per lusin supaya produk bisa dikenali tanpa dibuka satu per satu. Label field dan teks bantuannya berbahasa Indonesia, karena yang memakainya pemilik toko, bukan developer. Tanda Published dan Draft di atas form itu bukan hiasan: situs hanya membaca yang sudah Published, jadi harga yang masih diisi setengah jalan tidak pernah sampai ke pengunjung.
+
+Imbuhan "(contoh)" pada setiap nama produk datang dari tanda `dummy` di datanya, bukan diketik manual.
+
 ## Menjalankan
 
 ```bash
@@ -112,7 +120,7 @@ Prosedur lengkapnya, field per field, ada di **[docs/DATA.md](docs/DATA.md)**. R
 
 `src/content/products.json` disimpan sebagai cadangan. Kalau `projectId` di `src/config/cms.ts` dikembalikan ke `PLACEHOLDER`, situs langsung membaca file itu lagi tanpa perubahan lain.
 
-**Nomor WhatsApp** ada di `src/config/site.ts` pada `whatsappNumber`, dan ini satu-satunya yang memblokir peluncuran. Formatnya `6281234567890`, tanpa `+` dan tanpa `0` di depan. Ini juga satu-satunya tempat nomor ditulis di seluruh proyek; semua tombol membacanya dari sini. Selama masih placeholder, tidak ada tautan `wa.me` yang dibuat dan tombolnya menjelaskan kenapa.
+**Nomor WhatsApp** ada di `src/config/site.ts` pada `whatsappNumber`. Formatnya `6281234567890`, tanpa `+` dan tanpa `0` di depan. Ini juga satu-satunya tempat nomor ditulis di seluruh proyek; semua tombol membacanya dari sini. Selama masih placeholder, tidak ada tautan `wa.me` yang dibuat dan tombolnya menjelaskan kenapa.
 
 **Informasi toko** ada di `site.ts` pada `store`: alamat, Google Maps, jam buka, telepon, email. Tidak ada satu pun yang dikarang. Yang kosong tampil sebagai penanda, dan tombol petunjuk arah baru dibuat setelah ada alamat sungguhan.
 

@@ -66,7 +66,7 @@ Kalau CMS dipakai, tambahkan `npm run test:cms` dan `npm run test:migrasi`.
 
 Pemeriksaan manual yang tidak bisa diotomatiskan:
 
-- [ ] Buka satu tautan `wa.me` di **HP sungguhan** dan pastikan aplikasi WhatsApp benar-benar terbuka dengan pesan terisi. Ini satu-satunya bagian alur yang belum pernah diuji di perangkat asli.
+- [x] Buka satu tautan `wa.me` di **HP sungguhan** dan pastikan aplikasi WhatsApp benar-benar terbuka dengan pesan terisi. Diuji 13 Oktober 2026 pada Android: pesanan dua baris, aplikasi WhatsApp terbuka, nomor dan isi pesan benar.
 - [ ] Baca ulang seluruh teks beranda dengan mata pemilik: tidak ada klaim yang tidak benar.
 - [ ] Periksa satu halaman produk di [Rich Results Test](https://search.google.com/test/rich-results) setelah `dummy` dimatikan.
 
