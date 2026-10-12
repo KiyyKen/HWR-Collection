@@ -3,6 +3,7 @@ import Wordmark from './Wordmark.astro';
 import { site, isPlaceholder } from '../config/site';
 import { categories } from '../data/categories';
 import { storeEmail, storePhone } from '../lib/location';
+import { whatsappDisplay } from '../lib/whatsapp';
 
 const year = new Date().getFullYear();
 
@@ -18,7 +19,7 @@ const menu = [
  * baris yang hilang. Telepon dan email hanya muncul kalau memang ada.
  */
 const contactRows: { label: string; value: string | null }[] = [
-  { label: 'WhatsApp', value: site.whatsappNumber },
+  { label: 'WhatsApp', value: whatsappDisplay() },
   { label: 'Instagram', value: site.social.instagram },
   ...(storePhone() ? [{ label: 'Telepon', value: storePhone() }] : []),
   ...(storeEmail() ? [{ label: 'Email', value: storeEmail() }] : []),

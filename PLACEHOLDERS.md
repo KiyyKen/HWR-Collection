@@ -12,11 +12,11 @@ Jalankan `npm run validate` kapan saja untuk melihat apa yang masih kosong.
 
 | Kelompok | Isi | Jumlah |
 |---|---|---|
-| **A** | Sudah terisi, tidak menunggu siapa pun | 13 |
-| **B** | Menunggu data dari pemilik HWR | 11 |
+| **A** | Sudah terisi, tidak menunggu siapa pun | 16 |
+| **B** | Menunggu data dari pemilik HWR | 8 |
 | **C** | Tidak diperlukan untuk peluncuran | 7 |
 
-Hanya **satu** item yang benar-benar memblokir peluncuran: nomor WhatsApp (B1).
+**Tidak ada lagi pemblokir mutlak.** Nomor WhatsApp masuk 12 Oktober 2026 dan seluruh alur pemesanan hidup. Yang tersisa menentukan alamat situsnya (B17) dan membuat tampilannya lebih matang, bukan menentukan bisa terbit atau tidak.
 
 ---
 
@@ -47,6 +47,16 @@ Empat baris berikut sebelumnya ada di kelompok B. Nomor lamanya dipertahankan su
 | A12 (dulu B11, B12, C3) | Aturan isi satu lusin | Satu lusin satu ukuran · warna boleh dicampur · satu lusin satu model |
 | A13 (dulu B13) | Ekspedisi | Bebas pilih ekspedisi, dikonfirmasi lewat WhatsApp. Tidak ada nama ekspedisi yang ditulis. |
 
+### Diberikan pemilik 12 Oktober 2026
+
+| # | Hal | Nilai yang dipakai sekarang |
+|---|---|---|
+| A14 (dulu B1) | Nomor WhatsApp | `081314801091`, disimpan sebagai `6281314801091` karena itu bentuk yang diterima wa.me. Footer menampilkannya sebagai `0813-1480-1091`. |
+| A15 (dulu B6) | Tautan Google Maps | Menunjuk Pasar Cipulir, tempat kios HWR berada |
+| A16 (dulu B9) | Logo | Dipotong dari spanduk toko jadi `public/logo-hwr.webp`, latar putihnya transparan |
+
+Dengan A14 masuk, seluruh alur pemesanan hidup: tombol pesan aktif di semua halaman, dan pesan WhatsApp terbentuk lengkap dengan kode produk serta jumlah lusinnya.
+
 **Nomor bangunan dan RT/RW belum diberikan**, jadi baris jalan berhenti di "Jalan Ciledug Raya". Tidak ditambah nomor tebakan. Kalau nomornya ada, isi `store.addressLine` — tidak ada file lain yang perlu disentuh.
 
 Aturan isi lusin (A12) muncul di tiga tempat sekaligus dari satu sumber, lewat `src/lib/wholesale.ts`: tabel ketentuan di beranda, halaman produk di atas kontrol jumlah, dan daftar pesanan sebelum pesan dikirim.
@@ -56,14 +66,6 @@ Aturan isi lusin (A12) muncul di tiga tempat sekaligus dari satu sumber, lewat `
 ## B. Menunggu data dari pemilik HWR
 
 **Tidak ada nilai yang boleh ditebak untuk bagian ini.**
-
-### Memblokir peluncuran
-
-| # | Data | Format | Dipakai di |
-|---|---|---|---|
-| B1 | **Nomor WhatsApp** | Kode negara tanpa `+` dan tanpa `0` di depan — contoh `6281234567890` | Semua tombol pesan, seluruh tautan `wa.me` |
-
-Selama B1 kosong, situs **tidak membuat tautan WhatsApp sama sekali**. Tombolnya nonaktif dan menjelaskan kenapa. Tidak ada nomor contoh yang dipasang diam-diam.
 
 ### Produk
 
@@ -82,17 +84,15 @@ Langkah penggantiannya ada di [docs/DATA.md → Checklist mengganti 24 produk co
 
 | # | Data | Dipakai di |
 |---|---|---|
-| B6 | Tautan Google Maps toko (hasil tombol "Bagikan") | Tombol "Buka di Google Maps" |
-| B7 | Kode sematan peta (hasil "Sematkan peta") | Peta di bagian lokasi |
+| B7 | Kode sematan peta, hasil "Sematkan peta" di Google Maps | Peta di bagian lokasi, sekarang masih kotak bergaris putus |
 
-Koordinat tidak akan pernah ditebak. Tombol petunjuk arah sudah aktif sekarang karena dirakit dari alamat yang kamu berikan — bukan dari titik karangan.
+Koordinat tidak akan pernah ditebak. Tombol "Buka di Google Maps" dan "Petunjuk arah ke toko" sudah aktif: yang pertama memakai tautan yang kamu beri, yang kedua dirakit dari alamatnya.
 
 ### Merek
 
 | # | Data | Catatan |
 |---|---|---|
-| B9 | File logo HWR Collection | SVG paling ideal. Kalau hanya ada PNG, kirim resolusi tertinggi. |
-| B10 | Favicon / logo versi kotak | Untuk favicon dan gambar Open Graph |
+| B10 | Favicon dan logo versi kotak | Favicon serta gambar Open Graph masih memakai aset sementara. Logo yang ada sekarang berbentuk strip lebar 4,7:1, terlalu panjang untuk kotak 1:1. Monogram HWR dalam lingkaran saja sudah cukup, kalau ada filenya terpisah. |
 
 ### CMS & hosting
 
@@ -150,14 +150,12 @@ Brief §21. Tidak ada satu pun dari berikut ini yang muncul di situs, dan tidak 
 Salin, isi yang sudah ada, kirim balik. Yang belum ada jawabannya biarkan kosong — kosong lebih baik daripada ditebak.
 
 ```
-1.  Nomor WhatsApp untuk pemesanan   :
-2.  Nomor bangunan / RT / RW toko    :
-3.  Tautan Google Maps toko          :
-4.  Nama domain yang akan dipakai    :
-5.  File logo (SVG/PNG)              :
-6.  Daftar produk + harga per lusin  :
-7.  Foto produk                      :
-8.  Project ID Sanity (sanity.io)    :
+1.  Nama domain yang akan dipakai    :
+2.  Daftar produk + harga per lusin  :
+3.  Foto produk (4:5, min 1400px)    :
+4.  Kode sematan peta Google Maps    :
+5.  Logo versi kotak untuk favicon   :
+6.  Detail kios: lantai, blok, nomor :
 ```
 
-Sudah terjawab dan tidak perlu dikirim lagi: alamat, jam buka, aturan isi satu lusin, ekspedisi, dan pembayaran.
+Sudah terjawab dan tidak perlu dikirim lagi: nomor WhatsApp, tautan Google Maps, logo, alamat, jam buka, aturan isi satu lusin, ekspedisi, pembayaran, dan project Sanity.

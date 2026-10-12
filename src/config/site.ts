@@ -55,7 +55,8 @@ export const site = {
   locale: 'id-ID',
 
   /**
-   * PLACEHOLDER — nomor WhatsApp asli.
+   * Nomor WhatsApp toko. Diberikan pemilik sebagai 081314801091; ditulis di
+   * sini dalam bentuk internasional karena itu yang diterima wa.me.
    *
    * SATU-SATUNYA tempat nomor WhatsApp ditulis di seluruh proyek. Semua
    * tombol, tautan wa.me, dan pesan pesanan membacanya dari sini lewat
@@ -64,7 +65,7 @@ export const site = {
    * Format: kode negara tanpa "+" dan tanpa "0" di depan, contoh "6281234567890".
    * Selama masih PLACEHOLDER, tombol pesan dinonaktifkan dan menampilkan penjelasan.
    */
-  whatsappNumber: PLACEHOLDER as string,
+  whatsappNumber: '6281314801091' as string,
 
   /**
    * Aset merek. Semuanya sementara sampai file asli datang.
@@ -76,9 +77,36 @@ export const site = {
      * Isi dengan path di folder public/, contoh "/logo-hwr.svg".
      * Begitu diisi, `Wordmark.astro` memakainya tanpa perubahan kode lain.
      */
-    logo: null as string | null,
-    /** Tinggi tampil logo dalam px. Dipakai hanya kalau `logo` diisi. */
-    logoHeight: 28,
+    /**
+     * Logo asli, dipotong dari spanduk toko: monogram HWR dalam lingkaran
+     * plus wordmark "H.W.R Collection", latar putihnya dibuat transparan
+     * supaya bisa duduk di ground terang maupun gelap. Rasionya 4,69:1.
+     *
+     * Disimpan 479×102, yaitu dua kali tinggi tampil terbesarnya (footer,
+     * 51px). File aslinya 1314px dan berbobot 218 KB; dikirim apa adanya ke
+     * SETIAP halaman termasuk 404, dan itu terlihat jelas di `npm run perf`.
+     * Versi sekarang 24 KB. Kalau logonya diganti, kecilkan dengan cara yang
+     * sama dan perbarui `logoAspect`.
+     */
+    logo: '/logo-hwr.webp' as string | null,
+    /**
+     * Tinggi tampil logo dalam px. Dipakai hanya kalau `logo` diisi.
+     *
+     * 38, bukan 28 seperti wordmark sementara dulu: lockup aslinya memuat
+     * monogram, "H.W.R", dan "Collection" dalam satu strip selebar 4,7 kali
+     * tingginya, jadi di 28px kata "Collection" tinggal sekitar 8px dan
+     * berhenti terbaca.
+     */
+    logoHeight: 38,
+    /**
+     * Rasio lebar ÷ tinggi file logo (479 × 102 = 4,696).
+     *
+     * Dipakai menghitung atribut `width` supaya peramban bisa mencadangkan
+     * ruangnya sebelum gambar selesai dimuat. Tanpa itu header bergeser saat
+     * logo masuk, dan CLS yang selama ini 0,000 ikut rusak. Perbarui angkanya
+     * kalau file logonya diganti dengan rasio lain.
+     */
+    logoAspect: 479 / 102,
     /** Teks alternatif logo. */
     logoAlt: 'HWR Collection',
     /**
@@ -116,8 +144,11 @@ export const site = {
     city: 'Jakarta Selatan' as string,
     province: 'DKI Jakarta' as string,
     postalCode: '12230' as string,
-    /** Tautan Google Maps toko, hasil "Bagikan" di aplikasi Maps. */
-    mapsUrl: PLACEHOLDER as string,
+    /**
+     * Tautan Google Maps toko, hasil "Bagikan" di aplikasi Maps.
+     * Menunjuk Pasar Cipulir, tempat kios HWR berada.
+     */
+    mapsUrl: 'https://maps.app.goo.gl/hS4SLWMMXsHxaTQ86' as string,
     /** URL di dalam atribut src hasil "Sematkan peta" di Google Maps. */
     mapsEmbedUrl: PLACEHOLDER as string,
     phone: PLACEHOLDER as string,

@@ -266,17 +266,40 @@ console.log('\nAlur pesanan (mobile)');
     'Jumlah bisa diketik langsung (12 + 1 = 13 lusin)',
   );
 
-  // WhatsApp masih placeholder
-  const waBtn = drawer.getByRole('button', { name: /Pesan via WhatsApp/i });
-  check(await waBtn.isDisabled(), 'Tombol WhatsApp nonaktif selama nomor belum diisi');
-  check(
-    (await drawer.innerText()).includes('Nomor WhatsApp toko belum diisi'),
-    'Drawer menjelaskan kenapa tombol nonaktif',
-  );
-  check(
-    (await drawer.locator('a[href*="wa.me"]').count()) === 0,
-    'Tidak ada tautan wa.me palsu yang dibuat',
-  );
+  /*
+    Tombol kirim punya dua wujud, dan yang berlaku ditentukan konfigurasi:
+    tautan wa.me kalau nomor toko sudah diisi, tombol mati berpenjelasan
+    kalau belum. Uji ini dulu hanya mengenal wujud kedua, jadi ia gagal
+    justru pada hari nomor aslinya masuk. Sekarang keduanya diperiksa, dan
+    yang menentukan dibaca dari src/config/site.ts, bukan diasumsikan.
+  */
+  const siteSrc = await readFile('src/config/site.ts', 'utf8');
+  const nomorToko = siteSrc.match(/^\s*whatsappNumber: '(\d+)'/m)?.[1] ?? null;
+  const waTautan = drawer.locator('a[href*="wa.me"]');
+
+  if (nomorToko) {
+    check((await waTautan.count()) > 0, 'Drawer membuat tautan wa.me setelah nomor diisi');
+    const href = await waTautan.first().getAttribute('href');
+    check(href?.includes(`wa.me/${nomorToko}`) ?? false, 'Tautan memakai nomor dari konfigurasi', href ?? '');
+    /* Ringkasan drawer menyebut TOTAL (13 lusin); pesannya memerinci per
+       produk (12 dan 1). Yang diperiksa rinciannya, karena itu yang dipakai
+       penjual saat menyiapkan barang. */
+    const pesan = decodeURIComponent(href?.split('text=')[1] ?? '');
+    check(pesan.includes('12 lusin'), 'Pesan membawa jumlah baris yang baru diubah', pesan.slice(0, 90));
+    check(/\n2\. .+ 1 lusin/.test(pesan), 'Pesan memerinci produk kedua, bukan cuma totalnya');
+    check(
+      !(await drawer.innerText()).includes('Nomor WhatsApp toko belum diisi'),
+      'Penjelasan tombol mati tidak lagi tampil',
+    );
+  } else {
+    const waBtn = drawer.getByRole('button', { name: /Pesan via WhatsApp/i });
+    check(await waBtn.isDisabled(), 'Tombol WhatsApp nonaktif selama nomor belum diisi');
+    check(
+      (await drawer.innerText()).includes('Nomor WhatsApp toko belum diisi'),
+      'Drawer menjelaskan kenapa tombol nonaktif',
+    );
+    check((await waTautan.count()) === 0, 'Tidak ada tautan wa.me palsu yang dibuat');
+  }
 
   // Hapus satu baris
   await rows.last().getByRole('button', { name: /^Hapus/i }).click();

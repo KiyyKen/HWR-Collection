@@ -25,6 +25,28 @@ export function whatsappLink(message: string): string | null {
   return `https://wa.me/${site.whatsappNumber}?text=${encodeURIComponent(message)}`;
 }
 
+/**
+ * Nomor WhatsApp dalam bentuk yang dibaca orang, misalnya `0813-1480-1091`.
+ *
+ * Yang disimpan di konfigurasi adalah bentuk internasional tanpa `+`, karena
+ * itu yang diterima wa.me. Menampilkannya apa adanya membuat nomor toko
+ * terbaca seperti isi database, dan pembeli Indonesia mengenali nomornya
+ * lewat awalan `0`, bukan `62`.
+ *
+ * Mengembalikan null selama nomornya belum diisi.
+ */
+export function whatsappDisplay(): string | null {
+  if (!hasWhatsappNumber()) return null;
+
+  const nomor = site.whatsappNumber;
+  // 62 di depan adalah kode Indonesia; bentuk lokalnya memakai 0.
+  const lokal = nomor.startsWith('62') ? `0${nomor.slice(2)}` : nomor;
+
+  // Kelompok 4-4-sisa, pola yang dipakai operator seluler Indonesia.
+  const m = /^(\d{4})(\d{4})(\d+)$/.exec(lokal);
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : lokal;
+}
+
 /** Sapaan pembuka tanpa daftar produk, untuk tombol kontak umum. */
 export function generalMessage(): string {
   return `Halo ${site.name}, saya ingin bertanya soal produk dan pemesanan grosir.\n\nTerima kasih.`;

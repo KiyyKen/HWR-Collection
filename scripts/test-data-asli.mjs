@@ -21,6 +21,7 @@ import { spawn } from 'node:child_process';
 const PORT = 4332;
 const BASE = `http://localhost:${PORT}`;
 const CONFIG = 'src/config/site.ts';
+const CMS = 'src/config/cms.ts';
 const PRODUCTS = 'src/content/products.json';
 const LOGO = 'public/logo-uji.svg';
 
@@ -117,6 +118,25 @@ function ganti(src, nama, nilaiBaru, setelah = null) {
 const configAsli = await readFile(CONFIG, 'utf8');
 const produkAsli = await readFile(PRODUCTS, 'utf8');
 
+/**
+ * Sumber produk dipaksa kembali ke `products.json` selama uji ini.
+ *
+ * Yang ditambal di bawah adalah isi file itu — satu produk ditandai bukan
+ * data contoh lagi, supaya schema Product ikut terbit. Begitu `cms.ts`
+ * menunjuk project Sanity sungguhan, tambalan itu tidak berpengaruh apa pun:
+ * situs membaca dataset, bukan file, dan ujinya gagal menuduh situsnya rusak
+ * padahal yang salah tempat tambalannya.
+ */
+const cmsAsli = await readFile(CMS, 'utf8');
+const cmsKeJson = cmsAsli.replace(
+  /^\s*projectId: .*,$/m,
+  '  projectId: PLACEHOLDER as string,',
+);
+if (!/^\s*projectId: PLACEHOLDER/m.test(cmsKeJson)) {
+  console.error(`Tidak bisa memaksa ${CMS} kembali ke products.json. Uji dihentikan.`);
+  process.exit(1);
+}
+
 let config = configAsli;
 config = ganti(config, 'url', `'${UJI.domain}'`);
 config = ganti(config, 'whatsappNumber', `'${UJI.nomor}' as string`);
@@ -158,6 +178,7 @@ let browser;
 let preview;
 try {
   await writeFile(CONFIG, config);
+  await writeFile(CMS, cmsKeJson);
   await writeFile(PRODUCTS, JSON.stringify(produk, null, 2) + '\n');
   await writeFile(LOGO, logoSvg);
 
@@ -250,7 +271,13 @@ try {
 
   console.log('\nKontak');
   const footer = await page.locator('footer').innerText();
-  check(footer.includes(UJI.nomor), 'Nomor WhatsApp tampil di footer');
+  /* Footer menampilkan bentuk lokal berkelompok (0813-1480-1091), bukan
+     bentuk internasional yang disimpan konfigurasi. Yang diperiksa di sini
+     bentuk tampilnya; bahwa tautan wa.me tetap memakai 62 diuji terpisah di
+     npm run test:whatsapp. */
+  const nomorTampil = `0${UJI.nomor.slice(2)}`.replace(/^(\d{4})(\d{4})(\d+)$/, '$1-$2-$3');
+  check(footer.includes(nomorTampil), 'Nomor WhatsApp tampil di footer', `cari "${nomorTampil}"`);
+  check(!footer.includes(UJI.nomor), 'Footer tidak menampilkan bentuk mentah 62…');
   check(footer.includes(UJI.telepon), 'Telepon muncul setelah diisi');
   check(footer.includes(UJI.email), 'Email muncul setelah diisi');
 
@@ -327,16 +354,20 @@ try {
   await run('npx', ['astro', 'preview', 'stop']).catch(() => {});
 
   await writeFile(CONFIG, configAsli);
+  await writeFile(CMS, cmsAsli);
   await writeFile(PRODUCTS, produkAsli);
   await unlink(LOGO).catch(() => {});
 
   const c = await readFile(CONFIG, 'utf8');
   const p = await readFile(PRODUCTS, 'utf8');
-  if (c !== configAsli || p !== produkAsli) {
-    console.error('\nGAGAL memulihkan file. Periksa src/config/site.ts dan src/content/products.json.');
+  const m = await readFile(CMS, 'utf8');
+  if (c !== configAsli || p !== produkAsli || m !== cmsAsli) {
+    console.error(
+      '\nGAGAL memulihkan file. Periksa src/config/site.ts, src/config/cms.ts, dan src/content/products.json.',
+    );
     process.exitCode = 1;
   } else {
-    console.log('\nsite.ts, products.json, dan public/ dipulihkan ke keadaan placeholder.');
+    console.log('\nsite.ts, cms.ts, products.json, dan public/ dipulihkan ke keadaan semula.');
   }
 
   console.log('Membangun ulang dengan konfigurasi asli…');

@@ -37,6 +37,10 @@ const sizes = {
 const logoScale = { sm: 0.85, md: 1, lg: 1.35 } as const;
 const logo = site.brand.logo;
 const logoHeight = Math.round(site.brand.logoHeight * logoScale[size]);
+/* Lebar ikut dihitung, bukan dibiarkan auto: tanpa atribut `width` peramban
+   tidak tahu seberapa lebar ruang yang harus dicadangkan, dan header bergeser
+   begitu logonya selesai dimuat. */
+const logoWidth = Math.round(logoHeight * site.brand.logoAspect);
 ---
 
 {
@@ -44,6 +48,7 @@ const logoHeight = Math.round(site.brand.logoHeight * logoScale[size]);
     <img
       src={logo}
       alt={site.brand.logoAlt}
+      width={logoWidth}
       height={logoHeight}
       style={`height:${logoHeight}px;width:auto`}
       class:list={['block w-auto', className]}

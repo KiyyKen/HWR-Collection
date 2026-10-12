@@ -65,14 +65,23 @@ const check = (cond, label, detail = '') => {
 };
 
 const asli = await readFile(CONFIG, 'utf8');
+
+/*
+  Cocokkan baris `whatsappNumber` apa pun isinya, berjangkar ke awal baris.
+
+  Pola yang terikat kata PLACEHOLDER berhenti cocok begitu nomor asli diisi —
+  yaitu tepat saat jalur ini mulai benar-benar dipakai. Jangkar `^` menjaga
+  supaya contoh `whatsappNumber:` yang ditulis di dalam komentar tidak ikut
+  tertangkap lebih dulu dan membuat yang tertambal justru komentarnya.
+*/
 const ditambal = asli.replace(
-  'whatsappNumber: PLACEHOLDER as string,',
-  `whatsappNumber: '${NOMOR_UJI}' as string,`,
+  /^\s*whatsappNumber: .*,$/m,
+  `  whatsappNumber: '${NOMOR_UJI}' as string,`,
 );
 
-if (ditambal === asli) {
+if (!new RegExp(`^\\s*whatsappNumber: '${NOMOR_UJI}'`, 'm').test(ditambal)) {
   console.error(
-    `Tidak menemukan baris whatsappNumber di ${CONFIG}. Jalur WhatsApp tidak diuji.`,
+    `Baris whatsappNumber di ${CONFIG} tidak berhasil ditambal. Jalur WhatsApp tidak diuji.`,
   );
   process.exit(1);
 }
@@ -192,7 +201,7 @@ try {
     console.error(`\nGAGAL memulihkan ${CONFIG}. Periksa file itu secara manual.`);
     process.exitCode = 1;
   } else {
-    console.log(`\n${CONFIG} dipulihkan ke sentinel placeholder.`);
+    console.log(`\n${CONFIG} dipulihkan ke keadaan semula.`);
   }
 
   // dist/ masih memuat nomor uji sampai di-build ulang.
